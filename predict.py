@@ -44,7 +44,12 @@ if __name__ == "__main__":
     #-------------------------------------------------------------------------#
     dir_origin_path = "img/"
     dir_save_path   = "img_out/"
+    path = "frame_out/"
+    import os
 
+    folder = os.path.exists(path)
+    if not folder:  # 判断是否存在文件夹如果不存在则创建为文件夹
+        os.makedirs(path)
     if mode == "predict":
         '''
         1、如果想要进行检测完的图片的保存，利用r_image.save("img.jpg")即可保存，直接在predict.py里进行修改即可。 
@@ -71,7 +76,7 @@ if __name__ == "__main__":
             fourcc  = cv2.VideoWriter_fourcc(*'XVID')
             size    = (int(capture.get(cv2.CAP_PROP_FRAME_WIDTH)), int(capture.get(cv2.CAP_PROP_FRAME_HEIGHT)))
             out     = cv2.VideoWriter(video_save_path, fourcc, video_fps, size)
-
+        count_flag = 0
         fps = 0.0
         while(True):
             t1 = time.time()
@@ -89,8 +94,15 @@ if __name__ == "__main__":
             fps  = ( fps + (1./(time.time()-t1)) ) / 2
             print("fps= %.2f"%(fps))
             frame = cv2.putText(frame, "fps= %.2f"%(fps), (0, 40), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2)
-            
-            cv2.imshow("video",frame)
+
+            if count_flag < 3:
+                savefile = "frame_out/"+str(count_flag)+"_out"
+                np.save(savefile, frame)
+                count_flag += 1
+            if count_flag == 3:
+                count_flag = 0
+            cv2.imshow("video", frame)
+
             c= cv2.waitKey(1) & 0xff 
             if video_save_path!="":
                 out.write(frame)
