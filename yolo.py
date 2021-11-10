@@ -25,8 +25,8 @@ class YOLO(object):
         #   验证集损失较低不代表mAP较高，仅代表该权值在验证集上泛化性能较好。
         #   如果出现shape不匹配，同时要注意训练时的model_path和classes_path参数的修改
         #--------------------------------------------------------------------------#
-        "model_path"        : 'model_data/yolov4_tiny_weights_coco.pth',
-        "classes_path"      : 'model_data/coco_classes.txt',
+        "model_path"        : 'model_data/yolov4_tiny_weights_voc_CBAM.pth',
+        "classes_path"      : 'model_data/voc_classes.txt',
         #---------------------------------------------------------------------#
         #   anchors_path代表先验框对应的txt文件，一般不修改。
         #   anchors_mask用于帮助代码找到对应的先验框，一般不修改。
@@ -40,7 +40,7 @@ class YOLO(object):
         #   phi = 2为CBAM
         #   phi = 3为ECA
         #-------------------------------#
-        "phi"               : 0,  
+        "phi"               : 2,
         #---------------------------------------------------------------------#
         #   输入图片的大小，必须为32的倍数。
         #---------------------------------------------------------------------#
@@ -62,7 +62,7 @@ class YOLO(object):
         #   是否使用Cuda
         #   没有GPU可以设置成False
         #-------------------------------#
-        "cuda"              : False,
+        "cuda"              : True,
     }
 
     @classmethod
@@ -105,6 +105,7 @@ class YOLO(object):
         self.net    = YoloBody(self.anchors_mask, self.num_classes, self.phi)
         device      = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
         self.net.load_state_dict(torch.load(self.model_path, map_location=device))
+
         self.net    = self.net.eval()
         print('{} model, anchors, and classes loaded.'.format(self.model_path))
 
@@ -158,7 +159,7 @@ class YOLO(object):
         #---------------------------------------------------------#
         font        = ImageFont.truetype(font='model_data/simhei.ttf', size=np.floor(3e-2 * image.size[1] + 0.5).astype('int32'))
         thickness   = int(max((image.size[0] + image.size[1]) // np.mean(self.input_shape), 1))
-        
+
         #---------------------------------------------------------#
         #   图像绘制
         #---------------------------------------------------------#
@@ -179,7 +180,19 @@ class YOLO(object):
             label_size = draw.textsize(label, font)
             label = label.encode('utf-8')
             print(label, top, left, bottom, right)
-            
+
+
+            yearmonthdayfile = time.strftime("%Y_%m_%d", time.localtime())
+            timefile = time.strftime("%H_%M_%S", time.localtime())
+            path = yearmonthdayfile
+            import os
+            folder = os.path.exists(path)
+            if not folder:  # 判断是否存在文件夹如果不存在则创建为文件夹
+                os.makedirs(path)
+            if predicted_class == "motorbike":
+                image.save(str(yearmonthdayfile)+"/"+str(timefile)+".jpg")
+
+
             if top - label_size[1] >= 0:
                 text_origin = np.array([left, top - label_size[1]])
             else:

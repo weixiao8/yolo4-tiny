@@ -34,14 +34,14 @@ def index():
 def gen():
     count_flag = 0
     while True:
-        time.sleep(0.4)
-        if count_flag < 3:
+        time.sleep(0.1)
+        if count_flag < 5:
             filename = "frame_out/"+str(count_flag)+"_out.npy"
             image = np.load(filename)
             ret, jpeg = cv2.imencode('.jpg', image)
             frame = jpeg.tobytes()
             count_flag += 1
-        if count_flag == 3:
+        if count_flag == 5:
             count_flag = 0
         # 使用generator函数输出视频流， 每次请求输出的content类型是image/jpeg
         yield (b'--frame\r\n'

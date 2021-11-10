@@ -87,29 +87,34 @@ if __name__ == "__main__":
             # 转变成Image
             frame = Image.fromarray(np.uint8(frame))
             # 进行检测
+            # print(frame2)
+            # localtime = time.asctime(time.localtime(time.time()))
+            # if flag == 1:
+            #     frame.save("img/"+str(localtime)+".jpg")
             frame = np.array(yolo.detect_image(frame))
             # RGBtoBGR满足opencv显示格式
-            frame = cv2.cvtColor(frame,cv2.COLOR_RGB2BGR)
+            frame = cv2.cvtColor(frame, cv2.COLOR_RGB2BGR)
             
             fps  = ( fps + (1./(time.time()-t1)) ) / 2
             print("fps= %.2f"%(fps))
             frame = cv2.putText(frame, "fps= %.2f"%(fps), (0, 40), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2)
+            cv2.imshow("video", frame)
+            c = cv2.waitKey(1) & 0xff
+            if video_save_path != "":
+                out.write(frame)
 
-            if count_flag < 3:
+            if c == 27:
+                capture.release()
+                break
+            if count_flag < 5:
                 savefile = "frame_out/"+str(count_flag)+"_out"
                 np.save(savefile, frame)
                 count_flag += 1
-            if count_flag == 3:
+            if count_flag == 5:
                 count_flag = 0
-            cv2.imshow("video", frame)
 
-            c= cv2.waitKey(1) & 0xff 
-            if video_save_path!="":
-                out.write(frame)
 
-            if c==27:
-                capture.release()
-                break
+
         capture.release()
         out.release()
         cv2.destroyAllWindows()
