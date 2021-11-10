@@ -1,3 +1,4 @@
+import os
 import time
 
 import cv2
@@ -40,13 +41,15 @@ def gen():
             try:
                 image = np.load(filename)
             except:
-                time.sleep(0.001)
+                time.sleep(0.01)
                 image = np.load(filename)
-
+            finally:
+                if os.path.exists(filename):
+                    os.remove(filename)
             ret, jpeg = cv2.imencode('.jpg', image)
             frame = jpeg.tobytes()
             count_flag += 1
-        if count_flag == 15:
+        if count_flag == 30:
             count_flag = 0
         # 使用generator函数输出视频流， 每次请求输出的content类型是image/jpeg
         yield (b'--frame\r\n'
