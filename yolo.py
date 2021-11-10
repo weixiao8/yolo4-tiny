@@ -25,8 +25,8 @@ class YOLO(object):
         #   验证集损失较低不代表mAP较高，仅代表该权值在验证集上泛化性能较好。
         #   如果出现shape不匹配，同时要注意训练时的model_path和classes_path参数的修改
         #--------------------------------------------------------------------------#
-        "model_path"        : 'model_data/yolov4_tiny_weights_voc_CBAM.pth',
-        "classes_path"      : 'model_data/voc_classes.txt',
+        "model_path"        : 'model_data/yolov4_tiny_weights_coco.pth',
+        "classes_path"      : 'model_data/coco_classes.txt',
         #---------------------------------------------------------------------#
         #   anchors_path代表先验框对应的txt文件，一般不修改。
         #   anchors_mask用于帮助代码找到对应的先验框，一般不修改。
@@ -40,7 +40,7 @@ class YOLO(object):
         #   phi = 2为CBAM
         #   phi = 3为ECA
         #-------------------------------#
-        "phi"               : 2,
+        "phi"               : 0,
         #---------------------------------------------------------------------#
         #   输入图片的大小，必须为32的倍数。
         #---------------------------------------------------------------------#
@@ -62,7 +62,7 @@ class YOLO(object):
         #   是否使用Cuda
         #   没有GPU可以设置成False
         #-------------------------------#
-        "cuda"              : True,
+        "cuda"              : False,
     }
 
     @classmethod
@@ -182,15 +182,7 @@ class YOLO(object):
             print(label, top, left, bottom, right)
 
 
-            yearmonthdayfile = time.strftime("%Y_%m_%d", time.localtime())
-            timefile = time.strftime("%H_%M_%S", time.localtime())
-            path = yearmonthdayfile
-            import os
-            folder = os.path.exists(path)
-            if not folder:  # 判断是否存在文件夹如果不存在则创建为文件夹
-                os.makedirs(path)
-            if predicted_class == "motorbike":
-                image.save(str(yearmonthdayfile)+"/"+str(timefile)+".jpg")
+
 
 
             if top - label_size[1] >= 0:
@@ -203,6 +195,19 @@ class YOLO(object):
             draw.rectangle([tuple(text_origin), tuple(text_origin + label_size)], fill=self.colors[c])
             draw.text(text_origin, str(label,'UTF-8'), fill=(0, 0, 0), font=font)
             del draw
+            # ---------------------------------------------------------#
+            #   检测特定目标保存图片
+            # ---------------------------------------------------------#
+            yearmonthdayfile = time.strftime("%Y_%m_%d", time.localtime())
+            timefile = time.strftime("%H_%M_%S", time.localtime())
+            path = yearmonthdayfile
+            import os
+            folder = os.path.exists(path)
+            if not folder:  # 判断是否存在文件夹如果不存在则创建为文件夹
+                os.makedirs(path)
+            if predicted_class == "motorbike":
+                image.save(str(yearmonthdayfile) + "/" + str(timefile) + ".jpg")
+
 
         return image
 

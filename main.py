@@ -34,14 +34,19 @@ def index():
 def gen():
     count_flag = 0
     while True:
-        time.sleep(0.1)
-        if count_flag < 5:
+        time.sleep(0.09)
+        if count_flag < 30:
             filename = "frame_out/"+str(count_flag)+"_out.npy"
-            image = np.load(filename)
+            try:
+                image = np.load(filename)
+            except:
+                time.sleep(0.001)
+                image = np.load(filename)
+
             ret, jpeg = cv2.imencode('.jpg', image)
             frame = jpeg.tobytes()
             count_flag += 1
-        if count_flag == 5:
+        if count_flag == 15:
             count_flag = 0
         # 使用generator函数输出视频流， 每次请求输出的content类型是image/jpeg
         yield (b'--frame\r\n'
@@ -50,8 +55,8 @@ def gen():
 
 @app.route('/video_feed')  # 这个地址返回视频流响应
 def video_feed():
-    return Response(gen(),
-                    mimetype='multipart/x-mixed-replace; boundary=frame')
+        return Response(gen(),
+                        mimetype='multipart/x-mixed-replace; boundary=frame')
 
 
 if __name__ == '__main__':
