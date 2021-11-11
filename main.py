@@ -35,13 +35,14 @@ def index():
 def gen():
     count_flag = 0
     while True:
-        time.sleep(0.09)
-        if count_flag < 30:
+        time.sleep(0.19)
+        if count_flag < 2:
             filename = "frame_out/"+str(count_flag)+"_out.npy"
             try:
                 image = np.load(filename)
             except:
-                time.sleep(0.01)
+                while not os.path.exists(filename):
+                    pass
                 image = np.load(filename)
             finally:
                 if os.path.exists(filename):
@@ -49,7 +50,7 @@ def gen():
             ret, jpeg = cv2.imencode('.jpg', image)
             frame = jpeg.tobytes()
             count_flag += 1
-        if count_flag == 30:
+        if count_flag == 2:
             count_flag = 0
         # 使用generator函数输出视频流， 每次请求输出的content类型是image/jpeg
         yield (b'--frame\r\n'

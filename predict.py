@@ -106,11 +106,15 @@ if __name__ == "__main__":
             if c == 27:
                 capture.release()
                 break
-            if count_flag < 30:
+            if count_flag < 2:
                 savefile = "frame_out/"+str(count_flag)+"_out"
+
+                while os.path.exists(savefile):
+                    pass
                 np.save(savefile, frame)
+
                 count_flag += 1
-            if count_flag == 30:
+            if count_flag == 2:
                 count_flag = 0
 
 
