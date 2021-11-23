@@ -67,7 +67,4 @@ def video_feed():
 
 
 if __name__ == '__main__':
-    port = 5000
-    url = "http://192.168.3.2:{0}".format(port)
-    threading.Timer(1.25, lambda: webbrowser.open(url)).start()
     app.run(host='0.0.0.0', debug=False,port = 5000)

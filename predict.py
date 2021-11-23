@@ -2,6 +2,7 @@
 #   predict.py将单张图片预测、摄像头检测、FPS测试和目录遍历检测等功能
 #   整合到了一个py文件中，通过指定mode进行模式的修改。
 #-----------------------------------------------------------------------#
+import datetime
 import time
 
 import cv2
@@ -116,7 +117,6 @@ if __name__ == "__main__":
                 count_flag += 1
             if count_flag == 2:
                 count_flag = 0
-
 
 
         capture.release()

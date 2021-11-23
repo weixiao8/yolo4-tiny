@@ -209,6 +209,9 @@ class YOLO(object):
                 image.save(str(yearmonthdayfile) + "/" + str(timefile) + ".jpg")
 
 
+
+
+
         return image
 
     def get_FPS(self, image, test_interval):
