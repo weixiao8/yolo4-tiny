@@ -35,7 +35,7 @@ def index():
 def gen():
     count_flag = 0
     while True:
-        time.sleep(0.19)
+        time.sleep(0.4)
         if count_flag < 2:
             filename = "frame_out/"+str(count_flag)+"_out.npy"
             try:
@@ -61,10 +61,10 @@ def gen():
 def video_feed():
         return Response(gen(),
                         mimetype='multipart/x-mixed-replace; boundary=frame')
-@app.route('/update')  # 更新模型
-def video_feed():
-        return Response(gen(),
-                        mimetype='multipart/x-mixed-replace; boundary=frame')
+# @app.route('/update')  # 更新模型
+# def video_feed():
+#         return Response(gen(),
+#                         mimetype='multipart/x-mixed-replace; boundary=frame')
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', debug=True, port = 5000)
