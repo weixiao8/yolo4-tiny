@@ -8,11 +8,12 @@ import time
 import cv2
 import numpy as np
 from PIL import Image
-
 from yolo import YOLO
+from retinaface import Retinaface
 
 if __name__ == "__main__":
     yolo = YOLO()
+    retinaface = Retinaface()
     #----------------------------------------------------------------------------------------------------------#
     #   mode用于指定测试的模式：
     #   'predict'表示单张图片预测，如果想对预测过程进行修改，如保存图片，截取对象等，可以先看下方详细的注释
@@ -46,11 +47,15 @@ if __name__ == "__main__":
     dir_origin_path = "img/"
     dir_save_path   = "img_out/"
     path = "frame_out/"
+    path_face = "frame_out_face/"
     import os
 
     folder = os.path.exists(path)
     if not folder:  # 判断是否存在文件夹如果不存在则创建为文件夹
         os.makedirs(path)
+    folder = os.path.exists(path_face)
+    if not folder:  # 判断是否存在文件夹如果不存在则创建为文件夹
+        os.makedirs(path_face)
     if mode == "predict":
         '''
         1、如果想要进行检测完的图片的保存，利用r_image.save("img.jpg")即可保存，直接在predict.py里进行修改即可。 
@@ -79,12 +84,14 @@ if __name__ == "__main__":
             out     = cv2.VideoWriter(video_save_path, fourcc, video_fps, size)
         count_flag = 0
         fps = 0.0
+
         while(True):
             t1 = time.time()
             # 读取某一帧
             ref,frame=capture.read()
             # 格式转变，BGRtoRGB
-            frame = cv2.cvtColor(frame,cv2.COLOR_BGR2RGB)
+            frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+            frame_face = np.array(retinaface.detect_image(frame))
             # 转变成Image
             frame = Image.fromarray(np.uint8(frame))
             # 进行检测
@@ -95,11 +102,14 @@ if __name__ == "__main__":
             frame = np.array(yolo.detect_image(frame))
             # RGBtoBGR满足opencv显示格式
             frame = cv2.cvtColor(frame, cv2.COLOR_RGB2BGR)
+            frame_face = cv2.cvtColor(frame_face, cv2.COLOR_RGB2BGR)
             
             fps  = ( fps + (1./(time.time()-t1)) ) / 2
             print("fps= %.2f"%(fps))
             frame = cv2.putText(frame, "fps= %.2f"%(fps), (0, 40), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2)
+            frame_face = cv2.putText(frame_face, "fps= %.2f" % (fps), (0, 40), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2)
             cv2.imshow("video", frame)
+            cv2.imshow("video_face", frame_face)
             c = cv2.waitKey(1) & 0xff
             if video_save_path != "":
                 out.write(frame)
@@ -107,20 +117,22 @@ if __name__ == "__main__":
             if c == 27:
                 capture.release()
                 break
+
             if count_flag < 2:
                 savefile = "frame_out/"+str(count_flag)+"_out"
-
-                while os.path.exists(savefile):
-                    pass
                 np.save(savefile, frame)
-
                 count_flag += 1
             if count_flag == 2:
                 count_flag = 0
 
+            if count_flag < 2:
+                savefile = "frame_out_face/"+str(count_flag)+"_out"
+                np.save(savefile, frame_face)
+                count_flag += 1
+            if count_flag == 2:
+                count_flag = 0
 
         capture.release()
-        out.release()
         cv2.destroyAllWindows()
 
     elif mode == "fps":

@@ -35,7 +35,7 @@ def index():
 def gen():
     count_flag = 0
     while True:
-        time.sleep(0.4)
+
         if count_flag < 2:
             filename = "frame_out/"+str(count_flag)+"_out.npy"
             try:
@@ -43,6 +43,7 @@ def gen():
             except:
                 while not os.path.exists(filename):
                     pass
+                time.sleep(0.1)
                 image = np.load(filename)
             finally:
                 if os.path.exists(filename):

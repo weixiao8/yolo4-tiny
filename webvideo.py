@@ -26,14 +26,14 @@ class VideoCamera(object):
         ret, jpeg = cv2.imencode('.jpg', image)
         return jpeg.tobytes()
 
-app = Flask(__name__,static_folder='./static')
+
+app = Flask(__name__, static_folder='./static')
+
 
 @app.route('/')  # 主页
 def index():
     # jinja2模板，具体格式保存在index.html文件中
     return render_template('index.html')
-
-
 
 
 def gen():
@@ -67,4 +67,4 @@ def video_feed():
 
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', debug=False,port = 5000)
+    app.run(host='0.0.0.0', debug=False, port=5000)
