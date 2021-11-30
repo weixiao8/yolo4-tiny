@@ -171,7 +171,7 @@ def startvideopush():
     if key != secretKey:
         return {"state": "404", "msg": "秘钥错误，请检查秘钥！"}
     if envr == "linux":
-        command_pushjpg = "chmod u+x " + os.getcwd() + "/" + "shell/start_jpgpush.sh"
+        command_pushjpg = "chmod u+x " + os.getcwd() + "/shell/start_jpgpush.sh"
         os.system(command_pushjpg)
         os.system("shell/start_jpgpush.sh")
     return {"state": "200", "msg": "图片推送系统重启完成！"}
