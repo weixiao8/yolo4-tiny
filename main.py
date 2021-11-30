@@ -158,21 +158,16 @@ def findAll():
 @app.route('/restartSystem', methods=['GET'])
 def restartSystem():
     if envr == "linux":
-        os.system("chmod u+x /home/edgeb/od/new/yolo4-tiny/restart.sh")
+        os.system("chmod u+x /home/edgeb/od/new/yolo4-tiny/shell/restart.sh")
         os.system("shell/restart.sh")
     return {"state": "200", "msg": "系统重启完成！"}
 
 @app.route('/startvideopush', methods=['GET'])
-def restartSystem():
+def startvideopush():
     if envr == "linux":
-        command_video = "chmod u+x" + os.getcwd() + "/" + "shell/start_pushvideo.sh"
-        command_pushjpg = "chmod u+x" + os.getcwd() + "/" + "shell/start_jpgpush.sh"
-        os.system(command_video)
+        command_pushjpg = "chmod u+x " + os.getcwd() + "/" + "shell/start_jpgpush.sh"
         os.system(command_pushjpg)
-        os.system("shell/start_pushvideo.sh")
         os.system("shell/start_jpgpush.sh")
-    return {"state": "200", "msg": "视频推送和图片推送系统重启完成！"}
-
-
+    return {"state": "200", "msg": "图片推送系统重启完成！"}
 if __name__ == '__main__':
     app.run(host='0.0.0.0', debug=True, port=5000)

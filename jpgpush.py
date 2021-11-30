@@ -81,4 +81,5 @@ def start_push_image_to_web(interval):
 
 if __name__ == '__main__':
     interval = 10
+    print("图片推送系统已开启！")
     start_push_image_to_web(interval)
