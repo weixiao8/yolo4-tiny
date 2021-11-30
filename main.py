@@ -157,13 +157,19 @@ def findAll():
 
 @app.route('/restartSystem', methods=['GET'])
 def restartSystem():
+    key = request.headers["secretKey"]
+    if key != secretKey:
+        return {"state": "404", "msg": "秘钥错误，请检查秘钥！"}
     if envr == "linux":
         os.system("chmod u+x /home/edgeb/od/new/yolo4-tiny/shell/restart.sh")
         os.system("shell/restart.sh")
-    return {"state": "200", "msg": "系统重启完成！"}
+    return {"state": "200", "msg": "系统初始化完成！系统将在40秒内完成启动！"}
 
 @app.route('/startvideopush', methods=['GET'])
 def startvideopush():
+    key = request.headers["secretKey"]
+    if key != secretKey:
+        return {"state": "404", "msg": "秘钥错误，请检查秘钥！"}
     if envr == "linux":
         command_pushjpg = "chmod u+x " + os.getcwd() + "/" + "shell/start_jpgpush.sh"
         os.system(command_pushjpg)
