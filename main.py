@@ -8,6 +8,9 @@ import numpy as np
 from flask import Flask, render_template, Response, request
 
 secretKey = "E93C5337F00C258C5244670822F81DE5E7566EE1594CBD525279DA82EC18617F"
+envr = "windows"  # 环境选择windows 或者 linux
+
+
 class VideoCamera(object):
     def __init__(self):
         # 通过opencv获取实时视频流
@@ -112,20 +115,23 @@ def update():
     name = data["username"]
     jpg_base64 = data["jpg"][22:]
     imagedata = base64.b64decode(jpg_base64)
-    filename = "face_dataset/"+name +"_1.jpg"
+    filename = "face_dataset/" + name + "_1.jpg"
     file = open(filename, "wb")
     file.write(imagedata)
     file.close()
     if file:
-        return {"state":"200","msg":"添加人脸成功！"}
+        if envr == "linux":
+            os.system("./restart.sh")
+        return {"state": "200", "msg": "添加人脸成功！"}
     else:
-        return {"state":"500","msg":"添加人脸失败！"}
+        return {"state": "500", "msg": "添加人脸失败！"}
+
 
 @app.route('/delete', methods=['DELETE'])
 def delete():
     key = request.headers["secretKey"]
     if key != secretKey:
-        return {"state":"404","msg":"秘钥错误，请检查秘钥！"}
+        return {"state": "404", "msg": "秘钥错误，请检查秘钥！"}
     filename = "face_dataset/"
     data = json.loads(request.get_data(as_text=True))
     username = data["username"]
@@ -134,14 +140,17 @@ def delete():
         name = fullname.split("_")[0]
         if username == name:
             os.remove(filename + fullname)
+            if envr == "linux":
+                os.system("./restart.sh")
             return "删除人脸成功！"
     return "人脸库中不存在该人脸！"
+
 
 @app.route('/findAll', methods=['GET'])
 def findAll():
     key = request.headers["secretKey"]
     if key != secretKey:
-        return {"state":"404","msg":"秘钥错误，请检查秘钥！"}
+        return {"state": "404", "msg": "秘钥错误，请检查秘钥！"}
     filename = "face_dataset/"
     name_list = os.listdir(filename)
     username = []
@@ -149,6 +158,7 @@ def findAll():
         name = fullname.split("_")[0]
         username.append(name)
     return str(username)
+
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', debug=True, port=5000)
