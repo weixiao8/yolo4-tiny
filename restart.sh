@@ -4,7 +4,9 @@ echo "old_pid=${old_pid}"
 if [ -z $old_pid ];then
     echo "Process Non-existent !"
     echo "Starting Process...."
+    python3 encoding.py
     cd /home/edgeb/od/new/yolo4-tiny/
+
     nohup python3 predict.py >./my.log 2>&1 &
 else
     kill -9 ${old_pid}
@@ -20,9 +22,11 @@ else
         exit 1
     fi
 fi
-new_pid=$(ps ax|grep Service.py|grep -v grep|awk '{print $1}')
+new_pid=$(ps ax|grep predict.py|grep -v grep|awk '{print $1}')
+
 if [ -z ${new_pid} ];then
     echo "Restart Fail !"
 else
     echo "Restart Success !"
     echo "new_pid=${new_pid}"
+fi

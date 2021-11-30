@@ -43,10 +43,10 @@ def gen():
         if count_flag < 2:
             filename = "frame_out/" + str(count_flag) + "_out.npy"
             try:
-                image = np.load(filename)
                 while not os.path.exists(filename):
                     pass
                 time.sleep(0.1)
+                image = np.load(filename)
             except:
                 while not os.path.exists(filename):
                     pass
@@ -110,7 +110,6 @@ def update():
     key = request.headers["secretKey"]
     if key != secretKey:
         return {"state": "404", "msg": "秘钥错误，请检查秘钥！"}
-    print(request.headers["secretKey"])
     data = json.loads(request.get_data(as_text=True))
     name = data["username"]
     jpg_base64 = data["jpg"][22:]
@@ -120,8 +119,6 @@ def update():
     file.write(imagedata)
     file.close()
     if file:
-        if envr == "linux":
-            os.system("./restart.sh")
         return {"state": "200", "msg": "添加人脸成功！"}
     else:
         return {"state": "500", "msg": "添加人脸失败！"}
@@ -140,8 +137,6 @@ def delete():
         name = fullname.split("_")[0]
         if username == name:
             os.remove(filename + fullname)
-            if envr == "linux":
-                os.system("./restart.sh")
             return "删除人脸成功！"
     return "人脸库中不存在该人脸！"
 
@@ -158,6 +153,14 @@ def findAll():
         name = fullname.split("_")[0]
         username.append(name)
     return str(username)
+
+
+@app.route('/restartSystem', methods=['GET'])
+def restartSystem():
+    if envr == "linux":
+        os.system("chmod u+x /home/edgeb/od/new/yolo4-tiny/restart.sh")
+        os.system("./restart.sh")
+    return {"state": "200", "msg": "系统重启完成！"}
 
 
 if __name__ == '__main__':
