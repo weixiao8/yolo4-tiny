@@ -1,12 +1,13 @@
+import base64
+import json
 import os
 import time
 
 import cv2
 import numpy as np
-from flask import Flask, render_template, Response
+from flask import Flask, render_template, Response, request
 
-
-
+secretKey = "E93C5337F00C258C5244670822F81DE5E7566EE1594CBD525279DA82EC18617F"
 class VideoCamera(object):
     def __init__(self):
         # 通过opencv获取实时视频流
@@ -37,13 +38,16 @@ def gen():
     while True:
 
         if count_flag < 2:
-            filename = "frame_out/"+str(count_flag)+"_out.npy"
+            filename = "frame_out/" + str(count_flag) + "_out.npy"
             try:
                 image = np.load(filename)
-            except:
                 while not os.path.exists(filename):
                     pass
                 time.sleep(0.1)
+            except:
+                while not os.path.exists(filename):
+                    pass
+                time.sleep(0.05)
                 image = np.load(filename)
             finally:
                 if os.path.exists(filename):
@@ -60,12 +64,91 @@ def gen():
 
 @app.route('/video_feed')  # 这个地址返回视频流响应
 def video_feed():
-        return Response(gen(),
-                        mimetype='multipart/x-mixed-replace; boundary=frame')
-# @app.route('/update')  # 更新模型
-# def video_feed():
-#         return Response(gen(),
-#                         mimetype='multipart/x-mixed-replace; boundary=frame')
+    return Response(gen(),
+                    mimetype='multipart/x-mixed-replace; boundary=frame')
+
+
+def face_recognize():
+    count_flag = 0
+    while True:
+        if count_flag < 2:
+            filename = "frame_out_face/" + str(count_flag) + "_out.npy"
+            try:
+                while not os.path.exists(filename):
+                    pass
+                time.sleep(0.1)
+                image = np.load(filename)
+            except:
+                while not os.path.exists(filename):
+                    pass
+                time.sleep(0.05)
+                image = np.load(filename)
+            finally:
+                if os.path.exists(filename):
+                    os.remove(filename)
+            ret, jpeg = cv2.imencode('.jpg', image)
+            frame = jpeg.tobytes()
+            count_flag += 1
+        if count_flag == 2:
+            count_flag = 0
+        # 使用generator函数输出视频流， 每次请求输出的content类型是image/jpeg
+        yield (b'--frame\r\n'
+               b'Content-Type: image/jpeg\r\n\r\n' + frame + b'\r\n\r\n')
+
+
+@app.route('/video_feed_face')  # 这个地址返回视频流响应
+def video_feed_face():
+    return Response(face_recognize(),
+                    mimetype='multipart/x-mixed-replace; boundary=frame')
+
+
+@app.route('/update', methods=['POST'])
+def update():
+    key = request.headers["secretKey"]
+    if key != secretKey:
+        return {"state": "404", "msg": "秘钥错误，请检查秘钥！"}
+    print(request.headers["secretKey"])
+    data = json.loads(request.get_data(as_text=True))
+    name = data["username"]
+    jpg_base64 = data["jpg"][22:]
+    imagedata = base64.b64decode(jpg_base64)
+    filename = "face_dataset/"+name +"_1.jpg"
+    file = open(filename, "wb")
+    file.write(imagedata)
+    file.close()
+    if file:
+        return {"state":"200","msg":"添加人脸成功！"}
+    else:
+        return {"state":"500","msg":"添加人脸失败！"}
+
+@app.route('/delete', methods=['DELETE'])
+def delete():
+    key = request.headers["secretKey"]
+    if key != secretKey:
+        return {"state":"404","msg":"秘钥错误，请检查秘钥！"}
+    filename = "face_dataset/"
+    data = json.loads(request.get_data(as_text=True))
+    username = data["username"]
+    name_list = os.listdir(filename)
+    for fullname in name_list:
+        name = fullname.split("_")[0]
+        if username == name:
+            os.remove(filename + fullname)
+            return "删除人脸成功！"
+    return "人脸库中不存在该人脸！"
+
+@app.route('/findAll', methods=['GET'])
+def findAll():
+    key = request.headers["secretKey"]
+    if key != secretKey:
+        return {"state":"404","msg":"秘钥错误，请检查秘钥！"}
+    filename = "face_dataset/"
+    name_list = os.listdir(filename)
+    username = []
+    for fullname in name_list:
+        name = fullname.split("_")[0]
+        username.append(name)
+    return str(username)
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', debug=True, port = 5000)
+    app.run(host='0.0.0.0', debug=True, port=5000)

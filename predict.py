@@ -48,6 +48,7 @@ if __name__ == "__main__":
     dir_save_path   = "img_out/"
     path = "frame_out/"
     path_face = "frame_out_face/"
+    face_recognize = False
     import os
 
     folder = os.path.exists(path)
@@ -83,6 +84,7 @@ if __name__ == "__main__":
             size    = (int(capture.get(cv2.CAP_PROP_FRAME_WIDTH)), int(capture.get(cv2.CAP_PROP_FRAME_HEIGHT)))
             out     = cv2.VideoWriter(video_save_path, fourcc, video_fps, size)
         count_flag = 0
+        count_flag_face = 0
         fps = 0.0
 
         while(True):
@@ -91,46 +93,59 @@ if __name__ == "__main__":
             ref,frame=capture.read()
             # 格式转变，BGRtoRGB
             frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-            frame_face = np.array(retinaface.detect_image(frame))
+            frame_face =frame
             # 转变成Image
             frame = Image.fromarray(np.uint8(frame))
             # 进行检测
-            # print(frame2)
-            # localtime = time.asctime(time.localtime(time.time()))
-            # if flag == 1:
-            #     frame.save("img/"+str(localtime)+".jpg")
             frame = np.array(yolo.detect_image(frame))
             # RGBtoBGR满足opencv显示格式
             frame = cv2.cvtColor(frame, cv2.COLOR_RGB2BGR)
-            frame_face = cv2.cvtColor(frame_face, cv2.COLOR_RGB2BGR)
-            
-            fps  = ( fps + (1./(time.time()-t1)) ) / 2
+            fps = (fps + (1. / (time.time() - t1))) / 2
             print("fps= %.2f"%(fps))
             frame = cv2.putText(frame, "fps= %.2f"%(fps), (0, 40), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2)
-            frame_face = cv2.putText(frame_face, "fps= %.2f" % (fps), (0, 40), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2)
+
             cv2.imshow("video", frame)
-            cv2.imshow("video_face", frame_face)
+
             c = cv2.waitKey(1) & 0xff
+
             if video_save_path != "":
                 out.write(frame)
-
             if c == 27:
                 capture.release()
                 break
 
+
             if count_flag < 2:
-                savefile = "frame_out/"+str(count_flag)+"_out"
+                savefile = "frame_out/"+str(count_flag)+"_out.npy"
+                if os.path.exists(savefile):
+                    continue
                 np.save(savefile, frame)
                 count_flag += 1
             if count_flag == 2:
                 count_flag = 0
 
-            if count_flag < 2:
-                savefile = "frame_out_face/"+str(count_flag)+"_out"
-                np.save(savefile, frame_face)
-                count_flag += 1
-            if count_flag == 2:
-                count_flag = 0
+            if face_recognize:
+                frame_face = np.array(retinaface.detect_image(frame_face))
+                frame_face = cv2.cvtColor(frame_face, cv2.COLOR_RGB2BGR)
+                fps = (fps + (1. / (time.time() - t1))) / 2
+                frame_face = cv2.putText(frame_face, "fps= %.2f" % (fps), (0, 40), cv2.FONT_HERSHEY_SIMPLEX, 1,
+                                         (0, 255, 0), 2)
+                cv2.imshow("video_face", frame_face)
+                c = cv2.waitKey(1) & 0xff
+
+                if video_save_path != "":
+                    out.write(frame)
+                if c == 27:
+                    capture.release()
+                    break
+                if count_flag_face < 2:
+                    savefile_face = "frame_out_face/"+str(count_flag_face)+"_out.npy"
+                    if os.path.exists(savefile_face):
+                        continue
+                    np.save(savefile_face, frame_face)
+                    count_flag_face += 1
+                if count_flag_face == 2:
+                    count_flag_face = 0
 
         capture.release()
         cv2.destroyAllWindows()
