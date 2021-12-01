@@ -79,7 +79,7 @@ def start_push_image_to_web(interval):
                     print("文件夹已经清空！")
                 interval_flag = 1
 
-if __name__ == '__main__':
-    interval = 10
-    print("图片推送系统已开启！")
-    start_push_image_to_web(interval)
+
+interval = 10
+print("图片推送系统已开启！")
+start_push_image_to_web(interval)

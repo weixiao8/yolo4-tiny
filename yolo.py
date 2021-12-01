@@ -62,7 +62,7 @@ class YOLO(object):
         #   是否使用Cuda
         #   没有GPU可以设置成False
         #-------------------------------#
-        "cuda"              : False,
+        "cuda"              : True,
     }
 
     @classmethod

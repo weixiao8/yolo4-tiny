@@ -8,7 +8,7 @@ import numpy as np
 from flask import Flask, render_template, Response, request
 
 secretKey = "E93C5337F00C258C5244670822F81DE5E7566EE1594CBD525279DA82EC18617F"
-envr = "windows"  # 环境选择windows 或者 linux
+envr = "linux"  # 环境选择windows 或者 linux
 
 
 class VideoCamera(object):
@@ -45,7 +45,7 @@ def gen():
             try:
                 while not os.path.exists(filename):
                     pass
-                time.sleep(0.1)
+                time.sleep(0.3)
                 image = np.load(filename)
             except:
                 while not os.path.exists(filename):
