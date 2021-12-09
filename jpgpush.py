@@ -9,6 +9,8 @@ import json
 import os
 import time
 import requests
+
+
 def ToPush(filename):
     print(filename)
     headers = {'User-Agent': 'Dalvik/2.1.0 (Linux; U; Android 6.0.1; Nexus 5 Build/MMB29K) tuhuAndroid 5.24.6',
@@ -18,34 +20,38 @@ def ToPush(filename):
 
     f = open(filename, 'rb')  # 二进制方式打开图文件
     ls_f = base64.b64encode(f.read())  # 读取文件内容，转换为base64编码
-    #若yolo储存过程中出现读取图片文件失败的问题
+    # 若yolo储存过程中出现读取图片文件失败的问题
     if not ls_f:
         return 0
-    #推送地址
+    # 推送地址
     url = "http://njdt.njtjy.org.cn:10032/api/intelligentPrediction/save"
-    #base64的encode转码过后是b'开头的bytes类型，需先转换成字符串去掉头尾之后才可以用
-    jpgbase64 = "data:image/jpg;base64," + str(ls_f)[2:-1] #"data:image/jpg;base64,"是java后端解析base64的格式前缀
+    # base64的encode转码过后是b'开头的bytes类型，需先转换成字符串去掉头尾之后才可以用
+    jpgbase64 = "data:image/jpg;base64," + str(ls_f)[2:-1]  # "data:image/jpg;base64,"是java后端解析base64的格式前缀
     data = {"deviceNo": "MARK-42", "type": "1", "warningNum": "1", "imgBase64": jpgbase64}  # Post请求发送的数据，字典格式
-    #data需要转化成json才能post
+    # data需要转化成json才能post
     res = requests.post(url=url, data=json.dumps(data), headers=headers)  # 这里使用post方法，参数和get方法一样
     print(res.text)
     response = res.text[8:11]
     f.close()
-    #返回值为200则添加数据成功，返回415 500等均为失败
+    # 返回值为200则添加数据成功，返回415 500等均为失败
     if response == "200":
         return 1
     else:
         return 0
+
+
 def clear_dir(path):
     for i in os.listdir(path):
         path_file = os.path.join(path, i)
         if os.path.isfile(path_file):
+            time.sleep(0.1)
             os.remove(path_file)
         else:
             for f in os.listdir(path_file):
                 path_file2 = os.path.join(path_file, f)
                 if os.path.isfile(path_file2):
                     os.remove(path_file2)
+
 
 def start_push_image_to_web(interval):
     interval_flag = 0
@@ -67,7 +73,7 @@ def start_push_image_to_web(interval):
             # print("暂无预警")
             continue
         if len(files) > 0:
-            print(files )
+            print(files)
             time.sleep(1)
             filename = jpgpath + files[0]
             res = ToPush(filename)

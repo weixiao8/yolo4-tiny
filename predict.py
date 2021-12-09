@@ -8,6 +8,8 @@ import time
 import cv2
 import numpy as np
 from PIL import Image
+
+from jpgpush_face import ToPush
 from yolo import YOLO
 from retinaface import Retinaface
 
@@ -46,9 +48,19 @@ if __name__ == "__main__":
     # -------------------------------------------------------------------------#
     dir_origin_path = "img/"
     dir_save_path = "img_out/"
+    # -------------------------------------------------------------------------#
+    #   path指定了用于推流目标识别的文件夹路径
+    #   path_face用于推流人脸识别文件夹
+    #   face_recognize为是否打开人脸识别模块
+    # -------------------------------------------------------------------------#
     path = "frame_out/"
     path_face = "frame_out_face/"
-    face_recognize = True
+    face_recognize = 1
+    # 人脸识别认证时间，单位秒
+    interval_face = 3
+    #cv.show的开关
+    showcv = 0
+
     import os
 
     folder = os.path.exists(path)
@@ -86,7 +98,8 @@ if __name__ == "__main__":
         count_flag = 0
         count_flag_face = 0
         fps = 0.0
-
+        #人脸识别判定的初始时间
+        temptime1 = time.time()
         while (True):
             t1 = time.time()
             # 读取某一帧
@@ -103,32 +116,51 @@ if __name__ == "__main__":
             fps = (fps + (1. / (time.time() - t1))) / 2
             print("fps= %.2f" % (fps))
             frame = cv2.putText(frame, "fps= %.2f" % (fps), (0, 40), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2)
-            # cv2.imshow("video", frame)
-            # c = cv2.waitKey(1) & 0xff
-            # if video_save_path != "":
-            #     out.write(frame)
-            # if c == 27:
-            #     capture.release()
-            #     break
+            if showcv:
+                cv2.imshow("video", frame)
+                c = cv2.waitKey(1) & 0xff
+                if video_save_path != "":
+                    out.write(frame)
+                if c == 27:
+                    capture.release()
+                    break
             if count_flag < 2:
                 savefile = "frame_out/" + str(count_flag) + "_out.npy"
                 if not os.path.exists(savefile):
                     np.save(savefile, frame)
                 count_flag += 1
-
+            # -------------------------------------------------------------------------#
+            #   当face_recognize为1打开人脸检测模块
+            #   interval_face 是检测多少秒仍未检测到合法的人脸的时间阈值，超过时间阈值，上传人脸到监管平台
+            #   目标检测为异步推送，人脸识别为同步推送，同步推送当遇到网络堵塞会导致检测效率变低甚至故障
+            # -------------------------------------------------------------------------#
             if face_recognize:
-                frame_face = np.array(retinaface.detect_image(frame_face))
+                frame_face, flag = retinaface.detect_image(frame_face)
+                # ------------------------------------------------------------#
+                # flag == 2表示未检测到人脸或者人脸异常
+                # flag == 1表示检测到数据集中的合法人脸
+                # flag == 0表示检测到非法人脸
+                #-------------------------------------------------------------#
+                if flag == 2 or flag == 1:
+                    temptime1 = t1
+                if flag == 0:
+                    if int(t1 - temptime1) > interval_face:
+                        print("未通过人脸验证，上传预警")
+                        ToPush(frame_face)
+                        temptime1 = t1
+                frame_face = np.array(frame_face)
                 frame_face = cv2.cvtColor(frame_face, cv2.COLOR_RGB2BGR)
                 fps = (fps + (1. / (time.time() - t1))) / 2
                 frame_face = cv2.putText(frame_face, "fps= %.2f" % (fps), (0, 40), cv2.FONT_HERSHEY_SIMPLEX, 1,
                                          (0, 255, 0), 2)
-                # cv2.imshow("video_face", frame_face)
-                # c = cv2.waitKey(1) & 0xff
-                # if video_save_path != "":
-                #     out.write(frame)
-                # if c == 27:
-                #     capture.release()
-                #     break
+                if 1:
+                    cv2.imshow("video_face", frame_face)
+                    c = cv2.waitKey(1) & 0xff
+                    if video_save_path != "":
+                        out.write(frame)
+                    if c == 27:
+                        capture.release()
+                        break
                 if count_flag_face < 2:
                     savefile_face = "frame_out_face/" + str(count_flag_face) + "_out.npy"
                     if not os.path.exists(savefile_face):

@@ -137,8 +137,8 @@ def delete():
         name = fullname.split("_")[0]
         if username == name:
             os.remove(filename + fullname)
-            return "删除人脸成功！"
-    return "人脸库中不存在该人脸！"
+            return {"state": "200", "msg": "删除人脸成功！"}
+    return {"state": "500", "msg": "删除人脸成功！"}
 
 
 @app.route('/findAll', methods=['GET'])
@@ -165,6 +165,7 @@ def restartSystem():
         os.system("shell/restart.sh")
     return {"state": "200", "msg": "系统初始化完成！系统将在40秒内完成启动！"}
 
+
 @app.route('/startvideopush', methods=['GET'])
 def startvideopush():
     key = request.headers["secretKey"]
@@ -175,5 +176,7 @@ def startvideopush():
         os.system(command_pushjpg)
         os.system("shell/start_jpgpush.sh")
     return {"state": "200", "msg": "图片推送系统重启完成！"}
+
+
 if __name__ == '__main__':
     app.run(host='0.0.0.0', debug=True, port=5000)

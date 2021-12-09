@@ -25,8 +25,8 @@ class YOLO(object):
         #   验证集损失较低不代表mAP较高，仅代表该权值在验证集上泛化性能较好。
         #   如果出现shape不匹配，同时要注意训练时的model_path和classes_path参数的修改
         #--------------------------------------------------------------------------#
-        "model_path"        : 'model_data/yolov4_tiny_weights_coco.pth',
-        "classes_path"      : 'model_data/coco_classes.txt',
+        "model_path"        : 'model_data/yolov4_tiny_weights_glasses.pth',
+        "classes_path"      : 'model_data/glasses_classes.txt',
         #---------------------------------------------------------------------#
         #   anchors_path代表先验框对应的txt文件，一般不修改。
         #   anchors_mask用于帮助代码找到对应的先验框，一般不修改。
@@ -48,11 +48,11 @@ class YOLO(object):
         #---------------------------------------------------------------------#
         #   只有得分大于置信度的预测框会被保留下来
         #---------------------------------------------------------------------#
-        "confidence"        : 0.5,
+        "confidence"        : 0.8,
         #---------------------------------------------------------------------#
         #   非极大抑制所用到的nms_iou大小
         #---------------------------------------------------------------------#
-        "nms_iou"           : 0.3,
+        "nms_iou"           : 0.05,
         #---------------------------------------------------------------------#
         #   该变量用于控制是否使用letterbox_image对输入图像进行不失真的resize，
         #   在多次测试后，发现关闭letterbox_image直接resize的效果更好
@@ -205,7 +205,7 @@ class YOLO(object):
             folder = os.path.exists(path)
             if not folder:  # 判断是否存在文件夹如果不存在则创建为文件夹
                 os.makedirs(path)
-            if predicted_class == "motorbike":
+            if predicted_class == "glasses":
                 image.save(str(yearmonthdayfile) + "/" + str(timefile) + ".jpg")
 
 
